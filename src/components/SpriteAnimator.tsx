@@ -103,7 +103,7 @@ function SpriteAnimator({ state, size = 64 }: SpriteAnimatorProps) {
       ref={canvasRef}
       width={size}
       height={size}
-      className="block"
+      className="block pointer-events-none"
       style={{ width: size, height: size }}
     />
   );

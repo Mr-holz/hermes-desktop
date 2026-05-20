@@ -8,7 +8,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-body {
+/* 透明窗口：html/body/#root 必须设透明背景 */
+html, body, #root {
   margin: 0;
   padding: 0;
+  background: transparent;
 }

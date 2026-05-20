@@ -8,6 +8,7 @@ function FloatWindow() {
   const [notifyCount, setNotifyCount] = useState(0);
   const [petState, setPetState] = useState<PetState>("idle");
   const notifyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // 触发通知动画，短暂闪烁后恢复
   const triggerNotify = () => {
@@ -59,9 +60,21 @@ function FloatWindow() {
     };
   }, []);
 
-  const handleMouseDown = () => {
-    getCurrentWindow().startDragging();
-  };
+  // 原生事件监听，确保 Tauri startDragging 能正确捕获鼠标事件
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.button === 0) {
+        getCurrentWindow().startDragging();
+        e.preventDefault();
+      }
+    };
+
+    el.addEventListener("mousedown", onMouseDown);
+    return () => el.removeEventListener("mousedown", onMouseDown);
+  }, []);
 
   const handleClick = () => {
     emit("open-chat", {});
@@ -69,8 +82,8 @@ function FloatWindow() {
 
   return (
     <div
-      className="w-full h-full flex items-center justify-center select-none"
-      onMouseDown={handleMouseDown}
+      ref={containerRef}
+      className="w-full h-full flex items-center justify-center select-none cursor-grab"
       onClick={handleClick}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
@@ -78,7 +91,7 @@ function FloatWindow() {
       <div className="relative">
         {/* 精灵动画/角色 */}
         <div
-          className={`transition-all duration-200 cursor-pointer
+          className={`transition-all duration-200
             ${hover ? "scale-110" : "scale-100"}
           `}
           style={{ filter: hover ? "drop-shadow(0 0 8px rgba(168,85,247,0.6))" : "none" }}
