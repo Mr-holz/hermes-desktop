@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { emit, listen } from "@tauri-apps/api/event";
 import SpriteAnimator, { type PetState } from "./components/SpriteAnimator";
 
@@ -8,7 +7,6 @@ function FloatWindow() {
   const [notifyCount, setNotifyCount] = useState(0);
   const [petState, setPetState] = useState<PetState>("idle");
   const notifyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // 触发通知动画，短暂闪烁后恢复
   const triggerNotify = () => {
@@ -60,29 +58,13 @@ function FloatWindow() {
     };
   }, []);
 
-  // 原生事件监听，确保 Tauri startDragging 能正确捕获鼠标事件
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-
-    const onMouseDown = (e: MouseEvent) => {
-      if (e.button === 0) {
-        getCurrentWindow().startDragging();
-        e.preventDefault();
-      }
-    };
-
-    el.addEventListener("mousedown", onMouseDown);
-    return () => el.removeEventListener("mousedown", onMouseDown);
-  }, []);
-
   const handleClick = () => {
     emit("open-chat", {});
   };
 
   return (
     <div
-      ref={containerRef}
+      data-tauri-drag-region
       className="w-full h-full flex items-center justify-center select-none cursor-grab"
       onClick={handleClick}
       onMouseEnter={() => setHover(true)}
